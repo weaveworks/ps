@@ -12,6 +12,7 @@ package ps
 import (
 	"bytes"
 	"fmt"
+	"runtime"
 	"unsafe"
 )
 
@@ -125,9 +126,14 @@ func bytesView(v string) []byte {
 		return zeroByteSlice
 	}
 
+	b := make([]byte, 0)
 	sx := (*unsafeString)(unsafe.Pointer(&v))
-	bx := unsafeSlice{sx.Data, sx.Len, sx.Len}
-	return *(*[]byte)(unsafe.Pointer(&bx))
+	bx := (*unsafeSlice)(unsafe.Pointer(&b))
+	bx.Data = sx.Data
+	bx.Cap = sx.Len
+	bx.Len = sx.Len
+	runtime.KeepAlive(v)
+	return b
 }
 
 // hashKey returns a hash code for a given string
